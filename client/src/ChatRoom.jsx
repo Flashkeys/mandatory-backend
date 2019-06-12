@@ -1,41 +1,61 @@
-import React, { useLayoutEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import openSocket from 'socket.io-client';
-import { getParameterByName } from './utils.js';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import Moment from 'moment';
 
-const socket = openSocket('http://localhost:3001/');
+let io = require('socket.io-client');
+let socket = io("http://localhost:3001");
 
-const ChatRoom = () => {
+const ChatRoom = (props) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const username = localStorage.getItem("user");
-  
-  socket.on('data', value => {
-    setMessages([...messages, value]);
-  })
-  console.log(messages);
+  const username = props.username;
 
+  useEffect(() => {
+    socket.on('data', value => {
+      setMessages(messages => {
+        return [...messages, value];
+      });
+    });
+
+    return () => {
+      socket.off('data');
+    };
+  }, []);
+ 
   const typeMessage = (e) => {
     e.preventDefault();
-    socket.emit("sendData", { username, content: message });
+    socket.emit("message", { username, content: message });
   }
-  console.log(username);
-  
 
+  //TIMESTAMP
+  //---------------------------------
+  const date = new Date();
 
-
+  function timeCheck(time) {
+    if (time === undefined) {
+      return "timestamp not found";
+    } else {
+      return Moment(time, "YYYY-MM-DDThh:mm:ssZ").fromNow()
+    }
+  }
+//---------------------------------
   return (
     <div className="container">
       <div className="chatroom-container">
         <div className="chat-form">
           <form onSubmit={(e) => typeMessage(e)}>
-            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="text..." />
+            <input type="text" value={message} 
+                   onChange={(e) => setMessage(e.target.value)} 
+                   placeholder="text..." />
             <button type="submit" className="submit-btn">Send</button>
           </form>
 
           <div className="chatroom">
-            {messages.map(message => <p>{message.content}  <span style={{ fontSize: "12px", color: "f8f8f8" }}> message by </span>  {message.username} </p>)}
+            {messages.map(message => 
+              <ul id="messages" >
+                <li>{message.username}  
+                  <span>{timeCheck(date)}</span>   
+                  <p>{message.content}</p></li>
+              </ul>)}
             <br></br>
           </div>
         </div>
@@ -43,4 +63,4 @@ const ChatRoom = () => {
     </div>
   );
 }
-export default ChatRoom
+export default ChatRoom 

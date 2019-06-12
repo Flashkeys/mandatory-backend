@@ -1,49 +1,54 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-
-
 const Home = () => {
-  const [isLoggedIn, setLoggedIn] = useState(false);
+
   const [chatroom, setChatroom] = useState("");
   const [rooms, setRooms] = useState([]);
 
-  useLayoutEffect(() => {
-    setLoggedIn(localStorage.getItem('user') ? true : false);
-    if (isLoggedIn) {
-      axios.get('/chatroom')
-        .then(function (response) {
-          console.log(response);
 
-          setRooms(response.data)
+  useEffect(() => {
+    axios.get('/chatRoom')
+      .then(function (response) {
+        console.log(response);
 
-          console.log(response.data);
-          console.log(response.data);
-          console.log(response.data);
-          console.log(response.data);
-          console.log(response.data);
+        setRooms(response.data)
 
-        })
-    }
+        console.log(response.data);
+      });
 
-  }, [isLoggedIn])
+    }, []);
 
 
   const createRoom = (e) => {
     e.preventDefault();
-    console.log(chatroom);
+    console.log('new chatroom: ' + chatroom);
     axios.post('/chatroom', {
       id: chatroom,
     })
       .then(function (response) {
         console.log(response);
-        alert('alert')
+        alert('chatroom created')
       })
       .catch(function (error) {
         console.log(error);
       });
   }
 
+
+  const deleteRoom = data => {
+    axios.delete((`chatroom/${data.id}`), {
+      
+    })
+      .then(function (response) {
+        alert('Room Deleted')
+        
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+   
   return (
     <div className="container">
       <div className="Page">
@@ -51,24 +56,26 @@ const Home = () => {
         <div className="create">
           <h4>Create chatroom</h4>
           <form onSubmit={(e) => createRoom(e)}>
-            <input type="text" value={chatroom} onChange={(e) => setChatroom(e.target.value)} placeholder="Room name..." />
+            <input type="text" 
+                   value={chatroom} 
+                   onChange={(e) => 
+                   setChatroom(e.target.value)} 
+                   placeholder="Room name..." />
             <button type="submit" className="submit-btn">Create Room</button>
           </form>
         </div>
 
       </div>
-      {isLoggedIn ? <div className="show">
-        <h4>Rooms</h4>
+      <div className="show">
+        <h4>Current rooms</h4>
         <ul>
-          {rooms.map(data => <li><Link to={`/chatroom?id=${data}`} > {data} </Link></li>)
-
-          }
+          {rooms.map(data => <li key={data}><Link to={`/chatroom?id=${data}`} > {data} </Link> <button value={data} onClick={deleteRoom}> x </button> </li>)}
         </ul>
-      </div> :
+      </div> 
+      <br></br>
         <div className="links">
-          <Link to="/Login" className="login">Login</Link>
-          <Link to="/Register" className="Register">Register</Link>
-        </div>}
+          <Link to="/Login" className="login">Back to LOGIN</Link>
+        </div>
     </div>
   );
 }

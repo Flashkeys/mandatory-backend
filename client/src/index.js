@@ -4,16 +4,32 @@ import './index.css';
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Home from './Home.jsx';
 import Login from './Login.jsx';
-import Register from './Register.jsx';
 import ChatRoom from './ChatRoom';
+import NotFound from './NotFound'; 
 
-ReactDOM.render(
-  <Router>
-    <Switch>
-      <Route exact path="/" component={Home} />
-      <Route path="/Login" component={Login} />
-      <Route path="/Register" component={Register} />
-      <Route path="/chatroom" component={ChatRoom} />
-    </Switch>
-  </Router>
-  , document.getElementById('root')); 
+class App extends React.Component {
+  state = {
+    username: null,
+  }
+
+  setUsername(name) {
+    this.setState({username: name});
+  }
+
+  render() {
+    return (
+      <Router>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route path="/Login" render={(props => <Login setUsername={name => this.setUsername(name)} />)} />
+          <Route path="/chatroom" render={(props) => <ChatRoom username={this.state.username}/>} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
+    );
+  }
+}
+
+
+
+ReactDOM.render(<App />, document.getElementById('root'));
