@@ -7,14 +7,13 @@ let fs = require('fs');
 let http = require('http').createServer(app);
 let io = require('socket.io')(http);
 
-
-
 //MIDDLEWARE
 app.use(express.json());
 
+
 let users = require("./usernames.json");
 const chatrooms = require("./chatrooms.json");
-
+let messages = require("./messages.json");
 
 
 
@@ -40,8 +39,7 @@ app.post('/users', (req, res) => {
     }
   });
 
-  res.end("logged in as : " + user.username);
-  console.log("users: " + users);
+  res.end();
 });
 
 //-----------------------------------
@@ -78,7 +76,7 @@ app.post('/chatRoom', function (req, res) {
 
 app.delete('/chatRoom/:id', function (req, res) {
 
-  let id = req.params.id;
+  //let id = req.params.id;
 
   res.end("chatroom-deleted")
 });
@@ -92,14 +90,10 @@ app.delete('/chatRoom/:id', function (req, res) {
 
 // SOCKET.IO
 //-----------------------------------
-
-//We define a route handler / that gets called when we hit our website home.
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/ChatRoom.jsx');
 });
 
-//Notice that I initialize a new instance of socket.io by passing the http (the HTTP server) object. 
-//Then I listen on the connection event for incoming sockets, and I log it to the console.
 io.on('connection', function (socket) {
   console.log('a user connected');
   socket.on('chat message', function (msg) {
@@ -111,13 +105,31 @@ io.on('connection', function (socket) {
 });
 
 
-//In this case, for the sake of simplicity we’ll send the message to everyone, including the sender.
 io.on('connection', function (socket) {
   socket.on('message', function (msg) {
     console.log(msg);
     io.emit('data', msg);
+
+    //spara meddelandena här:
+    //-----------------------------------
+    console.log(msg);
+    messages.push(msg.content);
+    console.log("pushed: " + msg);   // TypeError: messages.push is not a function
+    console.log(messages);
+
+    //let jsonMessages = messages;
+    let jsonMessages = JSON.stringify(messages); 
+
+    fs.writeFile("messages.json", jsonMessages, function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });    
+    
   });
 });
 
 
+// PORT
+//-----------------------------------
 http.listen(port, () => console.log(`listening on port ${port}!`))

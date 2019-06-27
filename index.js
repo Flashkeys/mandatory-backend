@@ -26,9 +26,9 @@ io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('disconnect', function(){
     console.log('user disconnected');
-  });
+  });*/
 });
-*/
+
 
 //In order to send an event to everyone, Socket.IO gives us the io.emit:
 io.emit('some event', { for: 'everyone' });
